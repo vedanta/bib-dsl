@@ -1,6 +1,6 @@
 # BiB DSL Specification v2.0
 
-**BiB (Box-in-Box)** is a language-agnostic, YAML-based domain-specific language (DSL) for modeling hierarchical structures (e.g., capability maps, organization models, architecture views) and their inter-relationships. This specification defines the syntax, semantics, and rendering logic needed to implement a full-featured BiB-compatible engine in any language.
+**BiB (Box-in-Box)** is a language-agnostic, YAML-based domain-specific language (DSL) for modeling hierarchical structures such as capability maps, organizational charts, architecture views, and more. This specification defines the core syntax, semantics, and structural logic of BiB DSL. It deliberately excludes presentation or rendering formats, which are considered implementation details.
 
 ---
 
@@ -8,12 +8,13 @@
 
 BiB DSL enables:
 
-* Hierarchical modeling (nested boxes, trees, parent-child)
-* Tagging and semantic metadata
-* Explicit dependency and relationship definitions
-* Separation of content from visual styling
-* Rule-based dynamic theming and multi-view rendering
-* Extensible modeling constructs for advanced use cases
+* Hierarchical modeling with explicit levels and parent relationships
+* Semantic tagging for metadata and filtering
+* Explicit dependency and relationship modeling
+* External styling and view logic (out of scope for this spec)
+* Support for extensible metadata and typed entities
+
+This specification formalizes the modeling structure. Rendering (e.g., SVG, HTML, Mermaid) is intentionally left to downstream implementations.
 
 ---
 
@@ -21,69 +22,56 @@ BiB DSL enables:
 
 ### 2.1 Node
 
-Each node represents a named entity within a hierarchy.
+A node is a uniquely named entity in the model.
 
 ```yaml
 <node_name>:
-  - level: <integer>            # Required. 0 for root, increasing with depth
+  - level: <integer>            # Required. 0 for root, increments by depth
   - parent: <node_name>         # Optional. Required for level > 0
-  - common_name: <string>       # Optional. Friendly display name
-  - tags:                       # Optional. Key-value metadata
+  - common_name: <string>       # Optional. Display label
+  - tags:                       # Optional. Key-value metadata pairs
       - name: <tag_name>
         value: <tag_value>
-  - depends: <node_name|list>   # Optional. Cross-node relationships
-  - type: <string>              # Optional. Classification (e.g. business, tech, app)
-  - description: <string>       # Optional. Tooltip or long-form text
-  - weight: <float>             # Optional. Relative importance for sizing
+  - depends: <node_name|list>   # Optional. Relationships to other nodes
+  - type: <string>              # Optional. Domain-specific type or class
+  - description: <string>       # Optional. Human-readable annotation
+  - weight: <float>             # Optional. For relative sizing or sorting
 ```
 
 ### 2.2 Hierarchy
 
-* Nodes are organized by `level` and `parent`.
-* Level 0 is considered the top-level/root.
-* Child nodes must reference their parent's name.
+* Defined using `level` and `parent` attributes
+* Root node has `level: 0`
+* Parent must exist and precede the child
 
 ### 2.3 Tags
 
-Tags are user-defined key-value pairs used for metadata, filtering, and styling.
+* Tags are arbitrary key-value pairs
+* May be used for classification, filtering, or inference
 
 ### 2.4 Dependencies
 
-Dependencies define non-hierarchical links between nodes (e.g., relies\_on, supports).
-
-```yaml
-node_a:
-  - depends: node_b
-```
-
-Dependencies can also be named for semantic modeling:
+* Defined via `depends` field
+* Can be a string or list of dependency objects
+* Named relationships supported via `type`
 
 ```yaml
 node_a:
   - depends:
       - node: node_b
         type: supports
-      - node: node_c
-        type: blocks
 ```
 
 ---
 
 ## 3. Structure File (bib.yaml)
 
-> **Note:** YAML is the authoritative modeling format in BiB DSL. All structural definitions, metadata, and relationships must originate from `bib.yaml` (or its short syntax variant). Other representations (e.g., `bibDiagram`) are considered derived formats for rendering or export purposes.
-
-A complete, non-visual representation of the graph.
+> **Note:** YAML is the authoritative modeling format in BiB DSL. All structural definitions, metadata, and relationships must originate from `bib.yaml` (or its short syntax variant).
 
 ```yaml
 cloud:
   - level: 0
   - type: domain
-
-foundations:
-  - level: 1
-  - parent: cloud
-  - type: capability
 
 security:
   - level: 1
@@ -103,47 +91,9 @@ mfa:
 
 ---
 
-## 4. Styling File (bib.style.yaml)
+## 4. Short Syntax (Optional)
 
-Defines how nodes should be visually rendered based on rules.
-
-```yaml
-styles:
-  defaults:
-    fill: "#f8f8f8"
-    border: "1px solid #ccc"
-    font_size: "12px"
-    shape: "rectangle"
-
-  rules:
-    - match: name == "cloud"
-      fill: "#cce5ff"
-      font_weight: "bold"
-
-    - match: level == 1
-      fill: "#d9f2e6"
-
-    - match: tags[status] == "active"
-      fill: "#ffcccc"
-      border: "2px solid #e60000"
-
-    - match: type == "capability"
-      shape: "rounded"
-```
-
-### 4.1 Match Rules
-
-Match can evaluate:
-
-* `name`, `parent`, `level`, `type`
-* `tags[<key>]`
-* Boolean logic: `and`, `or`, `not`
-
----
-
-## 5. Short Syntax
-
-For rapid prototyping and visualization:
+For quick modeling and prototyping:
 
 ```yaml
 cloud
@@ -154,133 +104,64 @@ cloud
     pki
 ```
 
-This format infers:
+This form infers:
 
-* Level from indentation
-* Parent from nesting
-* No metadata or relationships
-
----
-
-## 6. Rendering Specification
-
-A compliant rendering engine must:
-
-* Parse `bib.yaml` into an in-memory graph
-* Parse `bib.style.yaml` and apply rules
-* Respect hierarchy and layout nesting
-* Render as:
-
-  * Nested boxes (SVG, HTML, Canvas)
-  * Directed graphs with relationships
-  * Exportable formats (PDF, PNG, Mermaid)
-
-Optional features:
-
-* Zoom/pan
-* Tooltips and labels from `common_name` / `description`
-* Highlighting via `tags` or view filters
+* `level` from indentation
+* `parent` from nesting
+* Metadata must be added later via full syntax
 
 ---
 
-## 7. Extensibility and View Control
+## 5. Extensibility
 
-Support extensions like:
+BiB DSL supports future enhancements by allowing the inclusion of new optional fields. These must not alter the semantics of core fields like `level`, `parent`, or `depends`.
 
-* `view: <string>` — group nodes into multiple views
-* `visible: true/false` — show/hide by filter
-* `group: <name>` — semantic grouping within layout
+Optional constructs include:
 
-Future DSL keywords:
-
-* `computed_tags:` — runtime evaluated tags
-* `annotations:` — user notes or change history
-* `links:` — external documentation/URLs
+* `view: <name>` – logical grouping for rendering or filtering
+* `group: <name>` – semantic subgroup classification
+* `computed_tags:` – tags generated at runtime or evaluation
+* `links:` – external documentation or integration references
+* `annotations:` – user comments or version notes
 
 ---
 
-## 8. JSON Schema (Optional for Tooling)
+## 6. Validation Rules
 
-To validate structure programmatically, a JSON Schema can be defined for both:
+Implementations may enforce the following:
 
-* `bib.yaml`
-* `bib.style.yaml`
-
----
-
-## 9. Implementation Notes
-
-Language-agnostic implementations may use:
-
-* YAML parser (e.g., PyYAML, js-yaml)
-* Graph engines (e.g., D3.js, Graphviz, Mermaid, HTML DOM)
-* Rule engines for matching style rules
-
-Support libraries:
-
-* Frontend: React, D3, SVG.js
-* Backend: Python, Node.js, Go
+* Node names must be unique
+* Level 0 nodes cannot have a parent
+* Parent must exist and precede a child
+* Dependencies must reference existing nodes
+* Tags must be a list of name/value pairs
 
 ---
 
-## 10. Mermaid Compatibility Proposal: `bibDiagram`
+## 7. Implementation Guidelines (Non-normative)
 
-To enhance compatibility with the Mermaid ecosystem, we propose a new chart type: `bibDiagram`, closely aligned with BiB DSL syntax.
+Although rendering is out of scope, implementers may:
 
-### 10.1 Syntax Example
+* Parse YAML into a typed AST or graph
+* Validate against a JSON schema
+* Create adapters for rendering engines (HTML, SVG, JSON)
+* Support live editing environments or notebooks
 
-```mermaid
-%%{ init: { "theme": "default" } }%%
-bibDiagram
+Implementations may optionally generate:
 
-cloud "Cloud" {
-  foundations "Foundations" {
-    accounts "Accounts"
-  }
-  security "Security" {
-    mfa "MFA"
-    pki "PKI"
-  }
-}
-
-relationships {
-  mfa --> foundations : supports
-}
-```
-
-### 10.2 Design Principles
-
-* Nesting via `{}` for box-in-box structure
-* Labeling via `id "Label"`
-* Relationship arrows defined separately
-* Optional support for styling via `%%{}` blocks
-
-### 10.3 Compiler Guidance
-
-A reference implementation may:
-
-* Parse `bibDiagram` into a hierarchy tree
-* Resolve IDs and labels
-* Render boxes using flexbox/SVG layering
-* Draw arrows across containers for dependencies
-
-### 10.4 Implementation Path
-
-* Submit as Mermaid.js enhancement proposal
-* Build standalone renderer to prototype
-* Auto-generate from BiB DSL YAML to Mermaid syntax
+* Visual diagrams (e.g., box-in-box, graph)
+* Reports, audits, and change tracking
+* Exporters (to Graphviz, Mermaid, etc.)
 
 ---
 
-## 11. License & Attribution
+## 8. License & Attribution
 
-BiB DSL was originally authored by Vedanta Barooah. It is released under the MIT License and intended for open use, extension, and implementation across modeling tools.
+BiB DSL was authored by Vedanta Barooah and is released under the MIT License. It is intended for open use, standardization, and collaborative development.
 
 ---
 
-## Appendix: Example Multi-Level Model
-
-### Retail Capability Map Example
+## Appendix: Example Model (Retail Capability Map)
 
 ```yaml
 retail:
@@ -348,51 +229,6 @@ recommend:
         type: consumes
       - node: campaigns
         type: influenced_by
-```
-
-### YAML Version
-
-```yaml
-business:
-  - level: 0
-  - type: domain
-
-sales:
-  - level: 1
-  - parent: business
-  - type: capability
-
-crm:
-  - level: 2
-  - parent: sales
-  - depends:
-      - node: analytics
-        type: supports
-  - tags:
-      - name: priority
-        value: high
-
-analytics:
-  - level: 2
-  - parent: business
-```
-
-### Mermaid Version
-
-```mermaid
-%%{ init: { "theme": "default" } }%%
-bibDiagram
-
-business "Business" {
-  sales "Sales" {
-    crm "CRM"
-  }
-  analytics "Analytics"
-}
-
-relationships {
-  crm --> analytics : supports
-}
 ```
 
 ---

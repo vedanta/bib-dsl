@@ -1,88 +1,92 @@
 # BiB DSL (Box-in-Box)
 
-**BiB (Box-in-Box) DSL** is a YAML-based, language-independent specification for modeling hierarchical structures (like capability maps, architecture views, and organizational models) with visual and semantic clarity.
-
-This project defines both the modeling language (`bib.yaml`) and styling system (`bib.style.yaml`) as well as export formats such as `bibDiagram` for visualization.
+**BiB (Box-in-Box) DSL** is a YAML-based, open modeling language designed for defining hierarchical systems such as capability maps, architecture views, and organizational models. It focuses on structure, metadata, and semantic relationships — deliberately excluding rendering and presentation logic.
 
 ---
 
 ## ✨ Key Features
 
-- ✅ Simple YAML-based syntax for hierarchy, tags, and relationships
-- 🎨 Externalized styling via a CSS-like rules engine (`bib.style.yaml`)
-- 🔁 Support for dependencies and metadata across nodes
-- 🧱 Flexible rendering model (SVG, HTML, Canvas, or export to Mermaid)
-- 🔄 Extensible design for views, filtering, annotations, and more
+- ✅ YAML-first: easy to author, version, and diff
+- 🔁 Semantic modeling: hierarchy, tags, dependencies
+- 🎯 Rendering-agnostic: output handled by external tools
+- 🧱 Extensible: add computed fields, annotations, and views
 
 ---
 
-## 🗂️ File Structure
+## 🗂️ Core Artifacts
 
-| File / Folder        | Purpose                                       |
-|----------------------|-----------------------------------------------|
-| `bib.yaml`           | Authoritative source model (hierarchy, tags)  |
-| `bib.style.yaml`     | Visual styling rules (colors, shapes, etc.)   |
-| `spec.md`            | Full formal specification of BiB DSL          |
-| `examples/`          | Real-world use cases like capability maps     |
-| `render/`            | Optional renderers or format converters       |
+| File            | Purpose                                           |
+|-----------------|---------------------------------------------------|
+| `bib.yaml`      | Canonical model definition (structure + semantics)|
+| `spec.md`       | Full specification of BiB DSL                     |
+| `examples/`     | Use cases like capability maps, org charts        |
+
+---
+
+## 🧩 Syntax Highlights
+
+### Full Syntax
+
+```yaml
+cloud:
+  - level: 0
+  - type: domain
+
+security:
+  - level: 1
+  - parent: cloud
+  - type: capability
+
+mfa:
+  - level: 2
+  - parent: security
+  - depends:
+      - node: foundations
+        type: supports
+  - tags:
+      - name: status
+        value: active
+```
+
+### Short Syntax (Optional)
+
+```yaml
+cloud
+  foundations
+    accounts
+  security
+    mfa
+    pki
+```
 
 ---
 
 ## 📦 Getting Started
 
-1. Define your hierarchy in `bib.yaml`
-2. Optionally create styling rules in `bib.style.yaml`
-3. Use a renderer to visualize it (HTML/SVG/PNG/Mermaid)
-4. (Optional) Export to `bibDiagram` for Mermaid-compatible visualization
+1. Define your model in `bib.yaml`
+2. Validate using JSON Schema (optional)
+3. Choose or build a renderer to visualize or export
+4. Extend with tags, views, and computed metadata
 
 ---
 
-## 📘 Specification
+## 🚫 Out of Scope
 
-The complete syntax and rendering rules are described in `spec.md`.
+- Rendering formats (SVG, HTML, Mermaid)
+- Presentation rules or style definitions
+- Visual layout semantics
 
----
-
-## 📊 Example
-
-### `bib.yaml`
-
-```yaml
-retail:
-  - level: 0
-  - type: domain
-
-product_mgmt:
-  - level: 1
-  - parent: retail
-  - type: capability
-```
-
-### `bib.style.yaml`
-
-```yaml
-styles:
-  rules:
-    - match: level == 0
-      fill: "#ccddee"
-```
+These are left to downstream tooling, libraries, or frameworks.
 
 ---
 
-## 📤 Mermaid Compatibility (`bibDiagram`)
+## 🛠 Implementation Notes
 
-BiB includes a proposed syntax extension for Mermaid:
-
-```mermaid
-bibDiagram
-retail "Retail" {
-  product_mgmt "Product Management"
-}
-```
+BiB DSL is intended to be parsed and interpreted in any language. Parsers, validators, and exporters can be built in Python, JavaScript, Go, or others.
 
 ---
 
 ## 🔖 License
 
-MIT License © Vedanta Barooah  
-Designed for open modeling, visualization, and extensibility.
+MIT License © Vedanta Barooah
+Built for open modeling, analysis, and future-proof tooling.
