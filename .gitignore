@@ -1,0 +1,39 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Conda environment
+.env/
+*.env
+conda-meta/
+*.lock
+
+# VSCode project settings
+.vscode/
+
+# Virtual environment
+venv/
+.env/
+.envrc
+
+# Mac OS metadata
+.DS_Store
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# temporary files
+test.py
+*.tmp
+
+# temporary renders
+out/*
