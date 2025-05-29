@@ -71,6 +71,8 @@ node_a:
 
 ## 3. Structure File (bib.yaml)
 
+> **Note:** YAML is the authoritative modeling format in BiB DSL. All structural definitions, metadata, and relationships must originate from `bib.yaml` (or its short syntax variant). Other representations (e.g., `bibDiagram`) are considered derived formats for rendering or export purposes.
+
 A complete, non-visual representation of the graph.
 
 ```yaml
@@ -221,13 +223,134 @@ Support libraries:
 
 ---
 
-## 10. License & Attribution
+## 10. Mermaid Compatibility Proposal: `bibDiagram`
+
+To enhance compatibility with the Mermaid ecosystem, we propose a new chart type: `bibDiagram`, closely aligned with BiB DSL syntax.
+
+### 10.1 Syntax Example
+
+```mermaid
+%%{ init: { "theme": "default" } }%%
+bibDiagram
+
+cloud "Cloud" {
+  foundations "Foundations" {
+    accounts "Accounts"
+  }
+  security "Security" {
+    mfa "MFA"
+    pki "PKI"
+  }
+}
+
+relationships {
+  mfa --> foundations : supports
+}
+```
+
+### 10.2 Design Principles
+
+* Nesting via `{}` for box-in-box structure
+* Labeling via `id "Label"`
+* Relationship arrows defined separately
+* Optional support for styling via `%%{}` blocks
+
+### 10.3 Compiler Guidance
+
+A reference implementation may:
+
+* Parse `bibDiagram` into a hierarchy tree
+* Resolve IDs and labels
+* Render boxes using flexbox/SVG layering
+* Draw arrows across containers for dependencies
+
+### 10.4 Implementation Path
+
+* Submit as Mermaid.js enhancement proposal
+* Build standalone renderer to prototype
+* Auto-generate from BiB DSL YAML to Mermaid syntax
+
+---
+
+## 11. License & Attribution
 
 BiB DSL was originally authored by Vedanta Barooah. It is released under the MIT License and intended for open use, extension, and implementation across modeling tools.
 
 ---
 
 ## Appendix: Example Multi-Level Model
+
+### Retail Capability Map Example
+
+```yaml
+retail:
+  - level: 0
+  - type: domain
+  - common_name: Retail Organization
+
+product_mgmt:
+  - level: 1
+  - parent: retail
+  - type: capability
+  - common_name: Product Management
+
+catalog:
+  - level: 2
+  - parent: product_mgmt
+  - type: sub-capability
+  - common_name: Catalog Management
+
+inventory:
+  - level: 2
+  - parent: product_mgmt
+  - type: sub-capability
+  - common_name: Inventory Management
+
+sales:
+  - level: 1
+  - parent: retail
+  - type: capability
+  - common_name: Sales & Marketing
+
+seo:
+  - level: 2
+  - parent: sales
+  - type: sub-capability
+  - common_name: SEO and SEM
+
+campaigns:
+  - level: 2
+  - parent: sales
+  - type: sub-capability
+  - common_name: Campaign Management
+
+customer:
+  - level: 1
+  - parent: retail
+  - type: capability
+  - common_name: Customer Experience
+
+support:
+  - level: 2
+  - parent: customer
+  - type: sub-capability
+  - common_name: Customer Support
+
+recommend:
+  - level: 2
+  - parent: customer
+  - type: sub-capability
+  - common_name: Product Recommendations
+
+recommend:
+  - depends:
+      - node: catalog
+        type: consumes
+      - node: campaigns
+        type: influenced_by
+```
+
+### YAML Version
 
 ```yaml
 business:
@@ -252,6 +375,24 @@ crm:
 analytics:
   - level: 2
   - parent: business
+```
+
+### Mermaid Version
+
+```mermaid
+%%{ init: { "theme": "default" } }%%
+bibDiagram
+
+business "Business" {
+  sales "Sales" {
+    crm "CRM"
+  }
+  analytics "Analytics"
+}
+
+relationships {
+  crm --> analytics : supports
+}
 ```
 
 ---
