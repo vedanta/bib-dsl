@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "bibcli"
+version = "0.1.0"
+description = "CLI for BiB DSL"
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+typer = "^0.9.0"
+pyyaml = "^6.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

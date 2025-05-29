@@ -1,0 +1,94 @@
+retail:
+  - level: 0
+  - type: domain
+  - common_name: Retail Organization
+
+product_mgmt:
+  - level: 1
+  - parent: retail
+  - type: capability
+  - common_name: Product Management
+
+catalog:
+  - level: 2
+  - parent: product_mgmt
+  - type: sub-capability
+  - common_name: Catalog Management
+
+catalog_api:
+  - level: 3
+  - parent: catalog
+  - type: service
+  - common_name: Catalog API Service
+
+catalog_ui:
+  - level: 3
+  - parent: catalog
+  - type: component
+  - common_name: Catalog UI
+
+inventory:
+  - level: 2
+  - parent: product_mgmt
+  - type: sub-capability
+  - common_name: Inventory Management
+
+stock_check:
+  - level: 3
+  - parent: inventory
+  - type: function
+  - common_name: Stock Checker
+
+sales:
+  - level: 1
+  - parent: retail
+  - type: capability
+  - common_name: Sales & Marketing
+
+seo:
+  - level: 2
+  - parent: sales
+  - type: sub-capability
+  - common_name: SEO and SEM
+
+keyword_rank:
+  - level: 3
+  - parent: seo
+  - type: tool
+  - common_name: Keyword Rank Tracker
+
+campaigns:
+  - level: 2
+  - parent: sales
+  - type: sub-capability
+  - common_name: Campaign Management
+
+customer:
+  - level: 1
+  - parent: retail
+  - type: capability
+  - common_name: Customer Experience
+
+support:
+  - level: 2
+  - parent: customer
+  - type: sub-capability
+  - common_name: Customer Support
+
+live_chat:
+  - level: 3
+  - parent: support
+  - type: component
+  - common_name: Live Chat Widget
+
+recommend:
+  - level: 2
+  - parent: customer
+  - type: sub-capability
+  - common_name: Product Recommendations
+
+  - depends:
+      - node: catalog
+        type: consumes
+      - node: campaigns
+        type: influenced_by
