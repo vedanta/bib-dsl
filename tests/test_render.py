@@ -34,8 +34,8 @@ def test_render_mermaid_preserves_hierarchy_and_dependency_edges():
     assert "pricing (external)" in source
 
 
-def test_render_mermaid_writes_source_when_path_is_provided(tmp_path):
-    output = tmp_path / "capability-map.mmd"
+def test_render_mermaid_writes_source_and_creates_parent_directory(tmp_path):
+    output = tmp_path / "generated" / "capability-map.mmd"
     source = render_mermaid({"root": [{"common_name": "Root"}]}, str(output))
 
     assert output.read_text(encoding="utf-8") == source
