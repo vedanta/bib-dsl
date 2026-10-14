@@ -5,6 +5,7 @@ canonical source of model data.
 """
 
 from html import escape
+from pathlib import Path
 import re
 from typing import Any, Dict, Optional
 
@@ -53,6 +54,7 @@ def render_mermaid(model: dict, output_file: Optional[str] = None) -> str:
     props_by_name = {
         str(name): _properties(props) for name, props in model.items()
     }
+    used_ids = set(node_ids.values())
 
     lines = ["flowchart TD"]
 
@@ -90,10 +92,13 @@ def render_mermaid(model: dict, output_file: Optional[str] = None) -> str:
                 target_id = node_ids[target_name]
             else:
                 if target_name not in external_ids:
-                    target_id = _safe_id(
-                        f"external_{target_name}", len(node_ids) + len(external_ids) + 1
-                    )
+                    index = len(node_ids) + len(external_ids) + 1
+                    target_id = _safe_id(f"external_{target_name}", index)
+                    while target_id in used_ids:
+                        index += 1
+                        target_id = _safe_id(f"external_{target_name}", index)
                     external_ids[target_name] = target_id
+                    used_ids.add(target_id)
                     lines.append(f'    {target_id}["{_label(target_name)} (external)"]')
                 target_id = external_ids[target_name]
             lines.append(
@@ -102,6 +107,7 @@ def render_mermaid(model: dict, output_file: Optional[str] = None) -> str:
 
     source = "\n".join(lines) + "\n"
     if output_file:
-        with open(output_file, "w", encoding="utf-8") as output:
-            output.write(source)
+        output_path = Path(output_file)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(source, encoding="utf-8")
     return source
