@@ -6,7 +6,7 @@ canonical source of model data.
 
 from html import escape
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 
 def _properties(items: Any) -> Dict[str, Any]:
@@ -46,7 +46,7 @@ def render_mermaid(model: dict, output_file: Optional[str] = None) -> str:
     if not isinstance(model, dict):
         raise TypeError("BiB model must be a mapping of node names to properties")
 
-    node_ids: Dict[str, str] = {
+    node_ids = {
         str(name): _safe_id(str(name), index)
         for index, name in enumerate(model.keys(), start=1)
     }
@@ -57,11 +57,9 @@ def render_mermaid(model: dict, output_file: Optional[str] = None) -> str:
     lines = ["flowchart TD"]
 
     for name, props in props_by_name.items():
-        common_name = props.get("common_name") or name
-        node_type = props.get("type")
-        label = str(common_name)
-        if node_type:
-            label = f"{label}<br/><small>{_label(node_type)}</small>"
+        label = props.get("common_name") or name
+        if props.get("type"):
+            label = f"{label} ({props['type']})"
         lines.append(f'    {node_ids[name]}["{_label(label)}"]')
 
     for name, props in props_by_name.items():
@@ -91,11 +89,13 @@ def render_mermaid(model: dict, output_file: Optional[str] = None) -> str:
             if target_name in node_ids:
                 target_id = node_ids[target_name]
             else:
-                target_id = external_ids.setdefault(
-                    target_name, _safe_id(f"external_{target_name}", len(node_ids) + len(external_ids) + 1)
-                )
-                if target_name not in external_ids or target_id not in lines:
+                if target_name not in external_ids:
+                    target_id = _safe_id(
+                        f"external_{target_name}", len(node_ids) + len(external_ids) + 1
+                    )
+                    external_ids[target_name] = target_id
                     lines.append(f'    {target_id}["{_label(target_name)} (external)"]')
+                target_id = external_ids[target_name]
             lines.append(
                 f"    {node_ids[name]} -. {_label(relationship)} .-> {target_id}"
             )
