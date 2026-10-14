@@ -12,6 +12,7 @@ def test_render_mermaid_preserves_hierarchy_and_dependency_edges():
             {"level": 1},
             {"parent": "retail"},
             {"common_name": 'Catalog "Core"'},
+            {"type": "sub-capability"},
             {
                 "depends": [
                     {"node": "inventory", "type": "consumes"},
@@ -25,13 +26,12 @@ def test_render_mermaid_preserves_hierarchy_and_dependency_edges():
     source = render_mermaid(model)
 
     assert source.startswith("flowchart TD\n")
-    assert "Retail &amp; Co" in source
-    assert "Catalog &quot;Core&quot;" in source
-    assert "small&gt;domain" in source
+    assert "Retail &amp; Co (domain)" in source
+    assert "Catalog &quot;Core&quot; (sub-capability)" in source
     assert "-->" in source
     assert "consumes" in source
     assert "influenced by" in source
-    assert "(external)" in source
+    assert "pricing (external)" in source
 
 
 def test_render_mermaid_writes_source_when_path_is_provided(tmp_path):
